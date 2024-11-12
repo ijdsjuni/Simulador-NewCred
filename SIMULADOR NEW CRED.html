@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Empréstimo - NewCred</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, button {
+            padding: 8px;
+            margin: 5px 0;
+            width: 200px;
+            font-size: 16px;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        .whatsapp-button {
+            background-color: #25D366;
+            color: white;
+            font-weight: bold;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        .whatsapp-button:hover {
+            background-color: #128C7E;
+        }
+    </style>
+    <script>
+        function calcularEmpréstimo() {
+            var valorDesejado = parseFloat(document.getElementById("valorDesejado").value);
+            var parcelas = parseInt(document.getElementById("parcelas").value);
+            var tipoCalculo = document.querySelector('input[name="tipoCalculo"]:checked').value;
+            
+            // Tabela de taxas de juros
+            var taxas = {
+                1: 8.00,
+                2: 8.13,
+                3: 8.75,
+                4: 9.38,
+                5: 10.00,
+                6: 10.70,
+                7: 10.90,
+                8: 11.10,
+                9: 11.30,
+                10: 11.50,
+                11: 12.25,
+                12: 13.00,
+                13: 16.28,
+                14: 16.78,
+                15: 17.28,
+                16: 17.78,
+                17: 18.28,
+                18: 18.80
+            };
+            
+            // Verifica se o número de parcelas está na tabela
+            var taxaJuros = taxas[parcelas];
+            if (!taxaJuros) {
+                document.getElementById("result").innerHTML = "Número de parcelas inválido.";
+                return;
+            }
+
+            // Realiza os cálculos com base na escolha do tipo de cálculo
+            var valorBruto, valorLiquido, valorJuros, valorTotal, valorParcela;
+            if (tipoCalculo === "Valor Líquido") {
+                // Caso o cliente escolha o valor líquido
+                valorBruto = valorDesejado / (1 + taxaJuros / 100);
+                valorJuros = valorBruto * (taxaJuros / 100);
+                valorTotal = valorBruto + valorJuros;
+                valorParcela = valorTotal / parcelas; // Cálculo da parcela mensal
+                document.getElementById("result").innerHTML = `
+                    <p>Valor Solicitado: R$ ${valorBruto.toFixed(2)}</p>
+                    <p>Valor dos Juros: R$ ${valorJuros.toFixed(2)}</p>
+                    <p>Valor Total a ser pago: R$ ${valorTotal.toFixed(2)}</p>
+                    <p>Quantidade de Parcelas: ${parcelas}</p>
+                    <p>Valor da Parcela: R$ ${valorParcela.toFixed(2)}</p>
+                    <button class="whatsapp-button" onclick="compartilharWhatsApp('${valorBruto.toFixed(2)}', '${valorJuros.toFixed(2)}', '${valorTotal.toFixed(2)}', '${parcelas}', '${valorParcela.toFixed(2)}')">Compartilhar no WhatsApp</button>
+                `;
+            } else if (tipoCalculo === "Valor Bruto") {
+                // Caso o cliente escolha o valor bruto
+                valorLiquido = valorDesejado;
+                valorJuros = valorDesejado * (taxaJuros / 100);
+                valorTotal = valorDesejado + valorJuros;
+                valorParcela = valorTotal / parcelas; // Cálculo da parcela mensal
+                document.getElementById("result").innerHTML = `
+                    <p>Valor Solicitado: R$ ${valorLiquido.toFixed(2)}</p>
+                    <p>Valor dos Juros: R$ ${valorJuros.toFixed(2)}</p>
+                    <p>Valor Total a ser pago: R$ ${valorTotal.toFixed(2)}</p>
+                    <p>Quantidade de Parcelas: ${parcelas}</p>
+                    <p>Valor da Parcela: R$ ${valorParcela.toFixed(2)}</p>
+                    <button class="whatsapp-button" onclick="compartilharWhatsApp('${valorLiquido.toFixed(2)}', '${valorJuros.toFixed(2)}', '${valorTotal.toFixed(2)}', '${parcelas}', '${valorParcela.toFixed(2)}')">Compartilhar no WhatsApp</button>
+                `;
+            }
+        }
+
+        function compartilharWhatsApp(valorBruto, valorJuros, valorTotal, parcelas, valorParcela) {
+            var mensagem = `💵 **Simulação de Empréstimo - NewCred**\n\n` +
+                           `- **Valor Solicitado**: R$ ${valorBruto}\n` +
+                           `- **Valor Total a ser pago**: R$ ${valorTotal}\n` +
+                           `- **Parcelas**: ${parcelas}x\n` +
+                           `- **Valor da Parcela**: R$ ${valorParcela}\n\n` +
+                           `Entre em contato com a NewCred para mais informações!`;
+            var url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
+            window.open(url, '_blank');
+        }
+    </script>
+</head>
+<body>
+    <h1>Simulador de Empréstimo - NewCred</h1>
+    
+    <label for="tipoCalculo">Escolha o tipo de cálculo:</label><br>
+    <input type="radio" name="tipoCalculo" value="Valor Líquido" checked> Valor Líquido<br>
+    <input type="radio" name="tipoCalculo" value="Valor Bruto"> Valor Bruto<br><br>
+    
+    <label for="parcelas">Número de Parcelas (1 a 18):</label>
+    <input type="number" id="parcelas" value="4" min="1" max="18"><br><br>
+    
+    <label for="valorDesejado">Valor Desejado:</label>
+    <input type="number" id="valorDesejado" value="1000"><br><br>
+    
+    <button onclick="calcularEmpréstimo()">Calcular</button>
+    
+    <div id="result"></div>
+</body>
+</html>
